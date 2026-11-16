@@ -5,8 +5,6 @@ TOKEN = os.environ["TELEGRAM_TOKEN"]
 UA = {"User-Agent": "Mozilla/5.0 (gta6-monitor)"}
 FEEDS = {
     "Reddit r/GTA6": "https://www.reddit.com/r/GTA6/new/.rss",
-    "Reddit Leaks": "https://www.reddit.com/r/GamingLeaksAndRumours/search.rss?q=GTA+6&restrict_sr=1&sort=new",
-    "Reddit busqueda": "https://www.reddit.com/search.rss?q=%22GTA+6%22+OR+%22GTA+VI%22&sort=new",
     "GTAForum": "https://gtaforum.org/articles.html/3_gaming-news/?d=1&rss=1",
     "RockstarINTEL": "https://rockstarintel.com/feed/",
     "YouTube Rockstar": "https://www.youtube.com/feeds/videos.xml?user=rockstargames",
