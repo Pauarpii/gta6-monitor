@@ -1,4 +1,4 @@
-import json, os, re, time, urllib.request, urllib.parse
+import json, os, re, time, datetime, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 
 TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -68,6 +68,24 @@ else:
     for name, title, link in new[:15]:
         tag = "OFICIAL" if name in OFFICIAL else "RUMOR/SIN CONFIRMAR"
         tg("sendMessage", chat_id=cid, text=f"[{tag}] [{name}] {title}\n{link}")
+
+PEND = "pendientes.md"
+now = datetime.datetime.now(datetime.timezone.utc)
+if not first:
+    keep = []
+    if os.path.exists(PEND):
+        for ln in open(PEND).read().splitlines():
+            m = re.match(r"- (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z \|", ln)
+            if m:
+                t = datetime.datetime.strptime(m.group(1), "%Y-%m-%dT%H:%M").replace(tzinfo=datetime.timezone.utc)
+                if now - t <= datetime.timedelta(hours=48):
+                    keep.append(ln)
+    stamp = now.strftime("%Y-%m-%dT%H:%M")
+    for name, title, link in new:
+        tag = "OFICIAL" if name in OFFICIAL else "RUMOR/SIN CONFIRMAR"
+        keep.append(f"- {stamp}Z | {tag} | {name} | {title.replace('|', '/')} | {link}")
+    head = "# Noticias GTA 6 de las ultimas 48h (generado por monitor.py)\n\n"
+    open(PEND, "w").write(head + "\n".join(keep) + "\n")
 
 for i in items:
     if i[2] and i[2] not in seen:
