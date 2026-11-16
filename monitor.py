@@ -70,6 +70,8 @@ else:
         tg("sendMessage", chat_id=cid, text=f"[{tag}] [{name}] {title}\n{link}")
 
 PEND = "pendientes.md"
+USED = "usadas.txt"
+used = set(open(USED).read().split()) if os.path.exists(USED) else set()
 now = datetime.datetime.now(datetime.timezone.utc)
 if not first:
     keep = []
@@ -78,10 +80,13 @@ if not first:
             m = re.match(r"- (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z \|", ln)
             if m:
                 t = datetime.datetime.strptime(m.group(1), "%Y-%m-%dT%H:%M").replace(tzinfo=datetime.timezone.utc)
-                if now - t <= datetime.timedelta(hours=48):
+                link = ln.rsplit(" | ", 1)[-1].strip()
+                if now - t <= datetime.timedelta(hours=48) and link not in used:
                     keep.append(ln)
     stamp = now.strftime("%Y-%m-%dT%H:%M")
     for name, title, link in new:
+        if link in used:
+            continue
         tag = "OFICIAL" if name in OFFICIAL else "RUMOR/SIN CONFIRMAR"
         keep.append(f"- {stamp}Z | {tag} | {name} | {title.replace('|', '/')} | {link}")
     head = "# Noticias GTA 6 de las ultimas 48h (generado por monitor.py)\n\n"
