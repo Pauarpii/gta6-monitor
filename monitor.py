@@ -1,4 +1,4 @@
-import json, os, re, urllib.request, urllib.parse
+import json, os, re, time, urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 
 TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -53,7 +53,9 @@ seen_list = json.load(open(seen_file)) if not first else []
 seen = set(seen_list)
 
 items = []
-for name, url in FEEDS.items():
+for n, (name, url) in enumerate(FEEDS.items()):
+    if n:
+        time.sleep(3)
     try:
         items += parse(name, get(url))
     except Exception as e:
