@@ -8,10 +8,14 @@ FEEDS = {
     "Reddit Leaks": "https://www.reddit.com/r/GamingLeaksAndRumours/search.rss?q=GTA+6&restrict_sr=1&sort=new",
     "Reddit busqueda": "https://www.reddit.com/search.rss?q=%22GTA+6%22+OR+%22GTA+VI%22&sort=new",
     "GTAForum": "https://gtaforum.org/articles.html/3_gaming-news/?d=1&rss=1",
+    "RockstarINTEL": "https://rockstarintel.com/feed/",
     "YouTube Rockstar": "https://www.youtube.com/feeds/videos.xml?user=rockstargames",
     "Google News ES": "https://news.google.com/rss/search?q=GTA+6&hl=es&gl=ES&ceid=ES:es",
     "Google News EN": "https://news.google.com/rss/search?q=GTA+6+when:2d&hl=en-US&gl=US&ceid=US:en",
 }
+
+OFFICIAL = {"YouTube Rockstar"}
+BLOCK = re.compile(r"casino|betting|sportsbook|free spins|\bsponsor\b|#ad\b|gambl|slots?\b", re.I)
 
 def get(url):
     req = urllib.request.Request(url, headers=UA)
@@ -45,7 +49,8 @@ def chat_id():
 
 seen_file = "seen.json"
 first = not os.path.exists(seen_file)
-seen = set(json.load(open(seen_file))) if not first else set()
+seen_list = json.load(open(seen_file)) if not first else []
+seen = set(seen_list)
 
 items = []
 for name, url in FEEDS.items():
@@ -54,14 +59,18 @@ for name, url in FEEDS.items():
     except Exception as e:
         print("fallo", name, e)
 
-new = [i for i in items if i[2] and i[2] not in seen]
+new = [i for i in items if i[2] and i[2] not in seen and not BLOCK.search(i[1])]
 cid = chat_id()
 
 if first:
     tg("sendMessage", chat_id=cid, text=f"Monitor GTA 6 activado. {len(new)} items previos registrados; a partir de ahora solo novedades.")
 else:
     for name, title, link in new[:15]:
-        tg("sendMessage", chat_id=cid, text=f"[{name}] {title}\n{link}")
+        tag = "OFICIAL" if name in OFFICIAL else "RUMOR/SIN CONFIRMAR"
+        tg("sendMessage", chat_id=cid, text=f"[{tag}] [{name}] {title}\n{link}")
 
-seen |= {i[2] for i in items if i[2]}
-json.dump(sorted(seen)[-3000:], open(seen_file, "w"))
+for i in items:
+    if i[2] and i[2] not in seen:
+        seen.add(i[2])
+        seen_list.append(i[2])
+json.dump(seen_list[-3000:], open(seen_file, "w"))
